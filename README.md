@@ -1,1 +1,2 @@
-# STL---Subset-Template-Library
+# STL- A toy C++ STL
+
