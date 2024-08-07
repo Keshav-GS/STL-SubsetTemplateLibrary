@@ -1,7 +1,6 @@
 #include<iostream>
-#include<string>
 
-using std::cout, std::endl, std::string;
+using std::endl;
 
 template <typename ADsType> class ADs    //ADs=>'Array based Datastructure'
 {
@@ -137,11 +136,7 @@ template <typename VectorType> class Vector : public ADs <VectorType>
 
         void pop_back()
         {
-            if(TOP == -1)
-            {
-                cout<<"Vector is empty"<<endl;
-                return;
-            }
+            if(TOP == -1) return; //vector is empty
             TOP -= 1;
 
             this->count -= 1;
@@ -165,7 +160,7 @@ template <typename VectorType> class Vector : public ADs <VectorType>
         }
 };
 
-template<typename StackType> class Stack : private Vector <StackType> /*Protected/private inheritance vs composition*/
+template<typename StackType> class Stack : protected Vector <StackType> /*Protected/private inheritance vs composition*/
 {
     public:
         Stack() : Vector<StackType>::Vector(5) {} //constructor chaining
@@ -205,7 +200,7 @@ template<typename StackType> class Stack : private Vector <StackType> /*Protecte
 /*Dequeue is implemented in STL as a dynamic array of dynamic arrays:
 https://stackoverflow.com/a/24483402/22839993*/
 
-template <typename DequeueType> class Dequeue : public ADs <DequeueType> /*Circular buffer used*/
+template <typename QueueType> class Queue : public ADs <QueueType>
 {
     protected:
         long long f;
@@ -218,7 +213,7 @@ template <typename DequeueType> class Dequeue : public ADs <DequeueType> /*Circu
             /*As we have increased Capacity, rearrange queue contents in linear fashion and reset values of f and r accordingly*/ 
             long long i = f - 1;
             size_t k = 0;
-            DequeueType temp[this->count];
+            QueueType temp[this->count];
             do
             {
                 i = (i + 1)%(this->Capacity/2);   
@@ -232,52 +227,46 @@ template <typename DequeueType> class Dequeue : public ADs <DequeueType> /*Circu
         }
 
     public:
-        Dequeue() : ADs<DequeueType>::ADs(5) //constructor chaining
+        Queue() : ADs<QueueType>::ADs(5) //constructor chaining
         {
             f = -1;
             r = -1;
         }
 
-        Dequeue(size_t Capacity) : ADs<DequeueType>::ADs(Capacity)  //constructor chaining
+        Queue(size_t Capacity) : ADs<QueueType>::ADs(Capacity)  //constructor chaining
         {
             f = -1;
             r = -1;
         }
 
-        Dequeue(const Dequeue& dq) : ADs<DequeueType>::ADs(dq) //copy constructor
+        Queue(const Queue& q) : ADs<QueueType>::ADs(q) //copy constructor
         {
-            f = dq.f;
-            r = dq.r;
-        }
-        
-        Dequeue& operator =(const Dequeue& dq)
-        {
-            ADs<DequeueType>::operator=(dq);
-            f = dq.f;
-            r = dq.r;
-
-            return *this;
+            f = q.f;
+            r = q.r;
         }
 
-        DequeueType& operator[](int index) const
-        {
-            if (index >= 0 && index < this->Capacity) return this->items[index];
-            else throw std::out_of_range("Index out of range");
-        }
-
-        DequeueType& front() const
+        QueueType& front() const
         {
             if (f >= 0 && f < this->Capacity) return this->items[f];
             else throw std::out_of_range("Index out of range");
         }
 
-        DequeueType& rear() const
+        QueueType& rear() const
         {
             if (r >= 0 && r < this->Capacity) return this->items[r];
             else throw std::out_of_range("Index out of range");        
         }
 
-        void push_back(const DequeueType& x)
+        Queue& operator =(const Queue& q)
+        {
+            ADs<QueueType>::operator=(q);
+            f = q.f;
+            r = q.r;
+
+            return *this;
+        }
+
+        void push(const QueueType& x)
         {
             if(this->count == this->Capacity)
             {
@@ -292,16 +281,12 @@ template <typename DequeueType> class Dequeue : public ADs <DequeueType> /*Circu
             }
             this->items[r] = x; 
             
-            this->count += 1;
+            this->count += 1;        
         }
 
-        void pop_front()
+        void pop()
         {
-            if(this->count == 0)
-            {
-                cout<<"Queue is empty"<<endl;
-                return;
-            }
+            if(this->count == 0) return; //queue is empty
             else if(f == r) //last element present
             {
                 f = -1;
@@ -315,95 +300,98 @@ template <typename DequeueType> class Dequeue : public ADs <DequeueType> /*Circu
             this->count -= 1;
         }   
 
+        void clear()
+        {
+            ADs<QueueType> :: clear();
+            f = -1;
+            r = -1;
+        }
+
+        ~Queue()
+        {
+            f = -1;
+            r = -1;
+        }
+};
+
+template <typename DequeueType> class Dequeue : protected Queue <DequeueType> /*Circular buffer used*/
+{
+    public:
+        Dequeue() : Queue<DequeueType>::Queue(5) {}
+
+        Dequeue(size_t Capacity) : Queue<DequeueType>::Queue(Capacity) {}
+
+        Dequeue(const Dequeue& dq) : Queue<DequeueType>::Queue(dq) {} //copy constructor
+
+        DequeueType& operator[](int index) const
+        {
+            if (index >= 0 && index < this->Capacity) return this->items[index];
+            else throw std::out_of_range("Index out of range");
+        }
+
+        void push_back(const DequeueType& x)
+        {
+            this->push(x);
+        }
+
+        void pop_front()
+        {
+            this->pop();
+        }   
+
         void push_front(const DequeueType& x) 
         {
             if(this->count == this->Capacity)
             {
                 this->resize_queue(this->Capacity * 2);
-                r = this->count - 1;
-                f = this->Capacity - 1;
+                this->r = this->count - 1;
+                this->f = this->Capacity - 1;
             } 
-            else if(f == 0)
+            else if(this->f == 0)
             {
-                f = this->Capacity - 1;
+                this->f = this->Capacity - 1;
             }
-            else if(f == -1) 
+            else if(this->f == -1) 
             {
-                f = 0;
-                r = 0;
+                this->f = 0;
+                this->r = 0;
             }
             else
             {
-                f = (f - 1)%this->Capacity;
+                this->f = (this->f - 1)%this->Capacity;
 
             }  
-            this->items[f] = x;
+            this->items[this->f] = x;
 
             this->count += 1;
         }
 
         void pop_back()
         {
-            if(this->count == 0)
+            if(this->count == 0) return; //queue is empty
+            else if(this->f == this->r) //last element present
             {
-                cout<<"Queue is empty"<<endl;
-                return;
+                this->f = -1;
+                this->r = -1;
             }
-            else if(f == r) //last element present
+            else if(this->r == 0) 
             {
-                f = -1;
-                r = -1;
-            }
-            else if(r == 0) 
-            {
-                r = this->Capacity - 1;
+                this->r = this->Capacity - 1;
             }
             else 
             {
-                r = (r - 1)%this->Capacity;
+                this->r = (this->r - 1)%this->Capacity;
             }
 
             this->count -= 1;
         }
 
-        void clear()
-        {
-            ADs<DequeueType> :: clear();
-            f = -1;
-            r = -1;
-        }
-
-        ~Dequeue()
-        {
-            f = -1;
-            r = -1;
-        }
+        using Queue<DequeueType>::front;
+        using Queue<DequeueType>::rear;
+        using Queue<DequeueType>::size;
+        using Queue<DequeueType>::capacity;
+        using Queue<DequeueType>::empty;
+        using Queue<DequeueType>::operator=; 
+        using Queue<DequeueType>::clear;
 };
 
-template <typename QueueType> class Queue : private Dequeue <QueueType>
-{
-    public:
-        Queue() : Dequeue<QueueType>::Dequeue(5) {}
-
-        Queue(size_t Capacity) : Dequeue<QueueType>::Dequeue(Capacity) {}
-
-        Queue(const Queue& q) : Dequeue<QueueType>::Dequeue(q) {} //copy constructor
-
-        void push(const QueueType& x)
-        {
-            this->push_back(x);
-        }
-
-        void pop()
-        {
-            this->pop_front();
-        }   
-
-        using Dequeue<QueueType>::size;
-        using Dequeue<QueueType>::capacity;
-        using Dequeue<QueueType>::empty;
-        using Dequeue<QueueType>::clear;
-        using Dequeue<QueueType>::front;
-        using Dequeue<QueueType>::rear;
-        using Dequeue<QueueType>::operator=; 
-};
