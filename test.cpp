@@ -87,7 +87,13 @@ int main()
     q8.push_front(8);
     q8.push_front(9);
     q8.push_front(10);
+    q8.push_back(1);
+    q8.push_back(2);
     q8.push_front(11);
+    q8.pop_front();
+    q8.pop_back();
+    cout<<"Checking dequeue indexing, First element of dequeue q8 contains: " << q8[0] << endl; //expected output: 10
+    cout<<"Checking dequeue indexing, Last element of dequeue q8 contains: " << q8[q8.size() - 1] << endl; //expected output: 1
     Dequeue<Dequeue<int>> q9(2);
     q9.push_back(q8);
     cout<<"Front of first dequeue in q9 contains: "<<q9.front().front()<<endl;

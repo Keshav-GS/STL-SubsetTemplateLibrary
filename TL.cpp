@@ -325,8 +325,15 @@ template <typename DequeueType> class Dequeue : protected Queue <DequeueType> /*
 
         DequeueType& operator[](int index) const
         {
-            if (index >= 0 && index < this->Capacity) return this->items[index];
-            else throw std::out_of_range("Index out of range");
+            if (index >= 0 && index < this->count) return this->items[(index + this->f) % this->Capacity];
+            try {
+                throw std::out_of_range("Index out of range");
+            } 
+            catch(const std::exception& e)
+            {
+                std::cerr<<e.what()<<endl;
+                exit(0);
+            }
         }
 
         void push_back(const DequeueType& x)
