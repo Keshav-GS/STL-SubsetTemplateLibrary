@@ -24,7 +24,7 @@ template <typename ADsType> class ADs    //ADs=>'Array based Datastructure'
             std::copy(ds.items, ds.items + ds.count, this->items);
         }
 
-        ~ ADs()
+        virtual ~ ADs()
         {
             /*unlike free, delete calls destructors of each obj in item array before deleting items from heap*/
             if(items) delete []items; 
@@ -154,7 +154,7 @@ template <typename VectorType> class Vector : public ADs <VectorType>
             TOP = -1;
         }
 
-        ~Vector()
+        virtual ~Vector()
         {
             TOP = -1;
         }
@@ -307,7 +307,7 @@ template <typename QueueType> class Queue : public ADs <QueueType>
             r = -1;
         }
 
-        ~Queue()
+        virtual ~Queue()
         {
             f = -1;
             r = -1;
