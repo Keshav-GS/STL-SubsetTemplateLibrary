@@ -41,6 +41,7 @@ int main()
 
     Vector<Vector<int>> v2;
     v2.push_back(v1);
+    v1.clear();
     cout<<"v2[0][1]: "<<v2[0][1]<<endl;
     cout<<"v1 size, capacity = "<<v1.size()<<","<<v1.capacity()<<endl;
     cout<<"v2 size, capacity = "<<v2.size()<<","<<v2.capacity()<<endl;
