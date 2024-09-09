@@ -6,6 +6,12 @@ int main()
 {
     //string does not work properly. Once realloc is called after filling in few elements, it breaks down
 
+    Vector<int> * v0;
+    v0 = new Vector<int>();
+    v0->push_back(42);
+    cout<<"First element, size of v0: "<<(*v0)[0]<< ", "<<(*v0).size()<<endl;
+    delete v0;
+
     Stack<int> s1;
     s1.push(1);
     s1.push(2);
@@ -108,8 +114,6 @@ int main()
     q6.clear();
     cout<<"At front of q5: "<<q5.front()<<endl;
     cout<<"At rear of q5: "<<q5.rear()<<endl;
-
-
 
 
     //VECTOR

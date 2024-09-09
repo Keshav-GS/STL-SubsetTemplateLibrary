@@ -21,10 +21,10 @@ template <typename ADsType> class ADs    //ADs=>'Array based Datastructure'
             count = ds.count;
             Capacity = ds.Capacity;
             items = new ADsType[ds.Capacity];
-            std::copy(ds.items, ds.items + ds.count, this->items);
+            std::copy(ds.items, ds.items + ds.Capacity, this->items);
         }
 
-        virtual ~ ADs()
+        virtual ~ ADs() //whenever a class might be extended, always a good idea to make the destructor virtual
         {
             /*unlike free, delete calls destructors of each obj in item array before deleting items from heap*/
             if(items) delete []items; 
@@ -84,36 +84,36 @@ template <typename ADsType> class ADs    //ADs=>'Array based Datastructure'
         }
 };
 
-template <typename VectorType> class Vector : public ADs <VectorType>
+template <typename StackType> class Stack : public ADs <StackType>
 {
     protected:
         int TOP;
     
     public:
-        Vector() : ADs<VectorType>::ADs(5) //constructor chaining
+        Stack() : ADs<StackType>::ADs(5) //constructor chaining
         {
             TOP = -1;
         }
 
-        Vector(size_t Capacity) : ADs<VectorType>::ADs(Capacity)   //constructor chaining
+        Stack(size_t Capacity) : ADs<StackType>::ADs(Capacity)   //constructor chaining
         {
             TOP = -1;
         }
 
-        Vector(const Vector& v) : ADs<VectorType>::ADs(v) 
+        Stack(const Stack& s) : ADs<StackType>::ADs(s) 
         {
-            TOP = v.TOP;
+            TOP = s.TOP;
         }
 
-        Vector& operator= (const Vector&v)
+        Stack& operator= (const Stack&s)
         {
-            ADs<VectorType>::operator=(v);
-            TOP = v.TOP;
+            ADs<StackType>::operator=(s);
+            TOP = s.TOP;
             
             return *this;
         }
 
-        VectorType& back() const
+        StackType& top() const
         {   
             try
             {
@@ -126,7 +126,7 @@ template <typename VectorType> class Vector : public ADs <VectorType>
             }
         }
 
-        void push_back(const VectorType& x)
+        void push(const StackType& x)
         {
             if(this->count + 1 >= this->Capacity) this->reserve(2 * this->Capacity);
             TOP += 1;
@@ -134,12 +134,48 @@ template <typename VectorType> class Vector : public ADs <VectorType>
             this->count += 1;
         }
 
-        void pop_back()
+        void pop()
         {
-            if(TOP == -1) return; //vector is empty
+            if(TOP == -1) return; //stack is empty
             TOP -= 1;
 
             this->count -= 1;
+        }
+
+        void clear()
+        {
+            ADs<StackType> :: clear();
+            TOP = -1;
+        }
+
+        virtual ~Stack()
+        {
+            TOP = -1;
+        }
+};
+
+template<typename VectorType> class Vector : protected Stack <VectorType> /*Protected/private inheritance vs composition*/
+{
+    public:
+        Vector() : Stack<VectorType>::Stack(5) {} //constructor chaining
+
+        Vector(size_t Capacity) : Stack<VectorType>::Stack(Capacity) {}   //constructor chaining
+
+        Vector(const Vector& v) : Stack<VectorType>::Stack(v) {} //copy constructor
+
+        VectorType& back() const
+        {
+            return this->top();
+        }
+
+        void push_back(const VectorType& x)
+        {
+            this->push(x);
+        }
+
+        void pop_back()
+        {
+            this->pop();
         }
 
         VectorType& operator[](int index) const
@@ -148,49 +184,13 @@ template <typename VectorType> class Vector : public ADs <VectorType>
             else throw std::out_of_range("Index out of range");
         }
 
-        void clear()
-        {
-            ADs<VectorType> :: clear();
-            TOP = -1;
-        }
+        using Stack<VectorType>::size;
+        using Stack<VectorType>::capacity;
+        using Stack<VectorType>::empty;
+        using Stack<VectorType>::operator=; 
+        using Stack<VectorType>::clear;
 
-        virtual ~Vector()
-        {
-            TOP = -1;
-        }
-};
-
-template<typename StackType> class Stack : protected Vector <StackType> /*Protected/private inheritance vs composition*/
-{
-    public:
-        Stack() : Vector<StackType>::Vector(5) {} //constructor chaining
-
-        Stack(size_t Capacity) : Vector<StackType>::Vector(Capacity) {}   //constructor chaining
-
-        Stack(const Stack& s) : Vector<StackType>::Vector(s) {} //copy constructor
-
-        StackType& top() const
-        {
-            return this->back();
-        }
-
-        void push(const StackType& x)
-        {
-            this->push_back(x);
-        }
-
-        void pop()
-        {
-            this->pop_back();
-        }
-
-        using Vector<StackType>::size;
-        using Vector<StackType>::capacity;
-        using Vector<StackType>::empty;
-        using Vector<StackType>::operator=; 
-        using Vector<StackType>::clear;
-
-        /*Note: Why have we not written 'using Vector<StackType>::~ADs' (writing this gives an error infact) ?
+        /*Note: Why have we not written 'using Stack<VectorType>::~ADs' (writing this gives an error infact) ?
         It is because when stack is generated the compiler automatically implements a destructor for stack class
         as we have not declared one. The compiler then generates code that calls the base class destructors. In other
         words, the base class destructors are not inherited but get called from after the dervided class destructor.
