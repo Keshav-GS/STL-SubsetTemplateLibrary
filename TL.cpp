@@ -126,7 +126,7 @@ template <typename StackType> class Stack : public ADs <StackType>
             }
         }
 
-        void push(const StackType& x)
+        void push(const StackType& x) //passing by reference to avoid wasteful 'double' copying. we make a deepcopy when we do this->items[TOP] = x
         {
             if(this->count + 1 >= this->Capacity) this->reserve(2 * this->Capacity);
             TOP += 1;
